@@ -1,14 +1,23 @@
-# Welcome to your CDK TypeScript project
+# AWS RDS Aurora Cluster restore from Snapshot in AWS CDK
 
-This is a blank project for CDK development with TypeScript.
-
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+- [`DatabaseClusterFromSnapshot`](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseClusterFromSnapshot.html)
+```typescript
+    new DatabaseClusterFromSnapshot(this, 'cluster', {
+      snapshotIdentifier: 'aurora-posgress-test-snapshot',
+      engine: DatabaseClusterEngine.auroraPostgres({ version: AuroraPostgresEngineVersion.VER_15_5 }),
+      // optional, defaults to m5.large
+      writer: ClusterInstance.provisioned('writer', {
+        instanceType: new InstanceType("t3.medium"),
+      }),
+      readers: [
+        ClusterInstance.provisioned('reader', {
+          instanceType: new InstanceType("t3.medium"),
+        }),
+      ],
+      vpc,
+      vpcSubnets: { subnetType: SubnetType.PRIVATE_ISOLATED },
+      storageEncrypted: true,
+      cloudwatchLogsExports: ["postgresql"],
+      cloudwatchLogsRetention: RetentionDays.ONE_DAY,
+    });
+```
